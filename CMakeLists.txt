@@ -35,3 +35,7 @@ add_test(NAME test_eltwise_add_sub_mod COMMAND test_eltwise_add_sub_mod)
 add_executable(test_ntt tests/test_ntt.cpp)
 target_link_libraries(test_ntt PRIVATE hexl_rv)
 add_test(NAME test_ntt COMMAND test_ntt)
+
+add_executable(bench_poly_mult tests/bench_poly_mult.cpp)
+target_link_libraries(bench_poly_mult PRIVATE hexl_rv)
+add_test(NAME bench_poly_mult COMMAND bench_poly_mult)
