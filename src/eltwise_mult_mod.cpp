@@ -1,6 +1,18 @@
 #include "hexl_rv/eltwise_mult_mod.hpp"
 #include "hexl_rv/number_theory.hpp"
 
+#ifdef HEXL_RV_HAS_RV64_ASM
+extern "C" void EltwiseMultModKernel_rv64(
+    uint64_t* result,
+    const uint64_t* operand1,
+    const uint64_t* operand2,
+    uint64_t n,
+    uint64_t modulus,
+    uint64_t barrett_factor,
+    uint64_t shift
+);
+#endif
+
 namespace hexl_rv {
 
 namespace {
@@ -11,11 +23,18 @@ void EltwiseMultModKernel(uint64_t* result,
                           const uint64_t* operand2,
                           uint64_t n,
                           uint64_t modulus) {
-    const uint64_t twice_modulus = 2 * modulus;
     BarrettFactor barrett(modulus);
     const uint64_t mu = barrett.barrett_factor;
     const uint64_t shift = barrett.prod_right_shift;
 
+#ifdef HEXL_RV_HAS_RV64_ASM
+    if constexpr (InputModFactor == 1) {
+        EltwiseMultModKernel_rv64(result, operand1, operand2, n, modulus, mu, shift);
+        return;
+    }
+#endif
+
+    const uint64_t twice_modulus = 2 * modulus;
     for (uint64_t i = 0; i < n; ++i) {
         uint64_t x = operand1[i];
         uint64_t y = operand2[i];
